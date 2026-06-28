@@ -1,0 +1,257 @@
+:root {
+  --neon: #36e3ff;
+  --neon-dim: #1a8aa8;
+  --danger: #ff3b6b;
+  --good: #4dff9e;
+  --bg: #02030a;
+  --font: "Segoe UI", "Helvetica Neue", system-ui, sans-serif;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  font-family: var(--font);
+  color: #eaffff;
+  user-select: none;
+  cursor: default;
+}
+
+#game {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* ---------- HUD ---------- */
+#hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+
+#crosshair {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 26px;
+  height: 26px;
+  transform: translate(-50%, -50%);
+}
+#crosshair span {
+  position: absolute;
+  background: var(--neon);
+  box-shadow: 0 0 6px var(--neon);
+}
+#crosshair span:nth-child(1),
+#crosshair span:nth-child(2) {
+  left: 50%;
+  width: 2px;
+  height: 8px;
+  margin-left: -1px;
+}
+#crosshair span:nth-child(1) {
+  top: 0;
+}
+#crosshair span:nth-child(2) {
+  bottom: 0;
+}
+#crosshair span:nth-child(3),
+#crosshair span:nth-child(4) {
+  top: 50%;
+  height: 2px;
+  width: 8px;
+  margin-top: -1px;
+}
+#crosshair span:nth-child(3) {
+  left: 0;
+}
+#crosshair span:nth-child(4) {
+  right: 0;
+}
+
+#hud-top {
+  position: absolute;
+  top: 22px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 32px;
+  font-weight: 700;
+  letter-spacing: 3px;
+}
+#level-name {
+  color: var(--neon);
+  text-shadow: 0 0 10px var(--neon-dim);
+}
+#enemies-remaining {
+  color: var(--danger);
+  text-shadow: 0 0 10px rgba(255, 59, 107, 0.6);
+}
+
+#hud-bottom {
+  position: absolute;
+  bottom: 26px;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0 32px;
+}
+.hud-label {
+  font-size: 11px;
+  letter-spacing: 3px;
+  opacity: 0.7;
+  margin-bottom: 6px;
+}
+#health-block {
+  width: 280px;
+}
+#health-bar {
+  height: 16px;
+  border: 1px solid var(--neon-dim);
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  box-shadow: 0 0 8px rgba(54, 227, 255, 0.3);
+}
+#health-fill {
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, var(--good), var(--neon));
+  transition: width 0.18s ease, background 0.3s;
+}
+#score-block {
+  text-align: center;
+}
+#score-value {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--neon);
+  text-shadow: 0 0 14px var(--neon-dim);
+}
+#ammo-block {
+  text-align: right;
+}
+#ammo-value {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+#damage-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  box-shadow: inset 0 0 220px 60px rgba(255, 30, 70, 0.85);
+  transition: opacity 0.12s ease;
+}
+
+#reload-indicator {
+  position: absolute;
+  top: 58%;
+  left: 50%;
+  transform: translateX(-50%);
+  letter-spacing: 4px;
+  font-weight: 700;
+  color: var(--neon);
+  text-shadow: 0 0 12px var(--neon-dim);
+  animation: pulse 0.8s infinite;
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* ---------- Screens ---------- */
+.screen {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(
+    circle at 50% 40%,
+    rgba(10, 20, 45, 0.82),
+    rgba(1, 2, 8, 0.96)
+  );
+  backdrop-filter: blur(3px);
+  text-align: center;
+}
+.screen-inner {
+  max-width: 640px;
+  padding: 40px;
+}
+#screen-title {
+  font-size: 54px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: var(--neon);
+  text-shadow: 0 0 24px var(--neon-dim), 0 0 60px rgba(54, 227, 255, 0.4);
+}
+#screen-subtitle {
+  font-size: 18px;
+  letter-spacing: 8px;
+  opacity: 0.85;
+  margin-top: 10px;
+}
+#screen-body {
+  margin: 28px 0;
+  line-height: 1.7;
+  font-size: 16px;
+  opacity: 0.92;
+}
+#screen-body .accent {
+  color: var(--neon);
+  font-weight: 700;
+}
+#screen-body .danger {
+  color: var(--danger);
+  font-weight: 700;
+}
+#screen-button {
+  pointer-events: auto;
+  cursor: pointer;
+  margin-top: 8px;
+  padding: 14px 46px;
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: var(--bg);
+  background: var(--neon);
+  border: none;
+  border-radius: 4px;
+  box-shadow: 0 0 20px var(--neon-dim);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+#screen-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 34px var(--neon);
+}
+.screen-hint {
+  margin-top: 30px;
+  font-size: 12px;
+  letter-spacing: 2px;
+  opacity: 0.55;
+}

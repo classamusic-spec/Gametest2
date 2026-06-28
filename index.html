@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galactic Federation — Alien Shooter</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2302030a'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%2336e3ff' stroke-width='2'/%3E%3Ccircle cx='16' cy='16' r='2' fill='%2336e3ff'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <canvas id="game"></canvas>
+
+    <!-- HUD -->
+    <div id="hud" class="hidden">
+      <div id="crosshair">
+        <span></span><span></span><span></span><span></span>
+      </div>
+
+      <div id="hud-top">
+        <div id="level-name">LEVEL 1</div>
+        <div id="enemies-remaining">ENEMIES: 0</div>
+      </div>
+
+      <div id="hud-bottom">
+        <div id="health-block">
+          <div class="hud-label">INTEGRITY</div>
+          <div id="health-bar"><div id="health-fill"></div></div>
+        </div>
+        <div id="score-block">
+          <div class="hud-label">SCORE</div>
+          <div id="score-value">0</div>
+        </div>
+        <div id="ammo-block">
+          <div class="hud-label">AMMO</div>
+          <div id="ammo-value">0 / 0</div>
+        </div>
+      </div>
+
+      <div id="damage-vignette"></div>
+      <div id="reload-indicator" class="hidden">RELOADING…</div>
+    </div>
+
+    <!-- Full-screen message screens -->
+    <div id="screen" class="screen">
+      <div class="screen-inner">
+        <h1 id="screen-title">GALACTIC FEDERATION</h1>
+        <p id="screen-subtitle">ALIEN SHOOTER</p>
+        <div id="screen-body"></div>
+        <button id="screen-button">DEPLOY</button>
+        <p class="screen-hint">
+          WASD move · MOUSE look · CLICK shoot · R reload · ESC pause
+        </p>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
