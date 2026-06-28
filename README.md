@@ -9,7 +9,8 @@ each overrun by a different alien species:
 3. **Evil Nordics** — Frozen Citadel (tall, armored, resilient)
 4. **Evil Reptilians** — The Warrens (slow, immense, brutal)
 
-Clear every alien on a planet to advance. Survive all four to win.
+Clear every alien on a planet to advance. The final planet is guarded by the
+towering **Reptilian Warlord** boss. Survive all four to win.
 
 ## Visual style
 
@@ -18,17 +19,36 @@ Sleek sci-fi neon: emissive procedurally-built aliens, dynamic lighting,
 palette so each planet feels distinct. No external 3D art assets — every alien
 is composed from primitive geometry and glowing materials.
 
+## "Call of Duty meets space" feel
+
+- **Sprint** (Shift), **aim down sights** (right click) with FOV zoom + tighter spread
+- Recoil kick, weapon bob, FOV punch and **camera shake** on fire / hits / explosions
+- **Regenerating health** after staying out of fire, with a low-health pulse
+- **Hitmarkers** (white on hit, red on kill) and a **kill feed**
+- **Cover** crates, pillars and barriers block movement, shots and plasma bolts
+- **Ranged Evil Nordics** that kite and fire plasma at you
+- **Reptilian Warlord boss** with a 5-bolt plasma volley, heavy melee and a boss health bar
+- Fully procedural **WebAudio sound effects** — shots, hits, explosions, boss roar (no audio files)
+
 ## Controls
 
 | Action | Input |
 | ------ | ----- |
 | Move   | `W` `A` `S` `D` |
+| Sprint | `Shift` (+ forward) |
 | Look   | Mouse |
 | Shoot  | Left click |
+| Aim    | Right click (hold) |
 | Reload | `R` |
 | Pause  | `Esc` |
 
 Click the game to capture the mouse (pointer lock).
+
+## Play it instantly (no install)
+
+Open **`game.html`** directly in a browser — it's a fully self-contained,
+single-file build (all JavaScript and CSS inlined) that runs from the
+filesystem with no server. Regenerate it with `npm run build:single`.
 
 ## Run locally
 
@@ -56,14 +76,17 @@ npm run test:e2e   # Playwright smoke test: loads, renders, no errors
 
 ```
 src/
-  Game.ts            game state machine + main loop
-  constants.ts       tunables (player, weapon, arena)
-  core/              Engine, PostProcessing (bloom), Input
-  world/             Environment (lights, fog, sky, ground, walls)
-  player/            PlayerController (pointer lock + WASD), Health
-  weapons/           Weapon (hitscan, viewmodel, muzzle flash, tracer)
-  enemies/           Enemy base, EnemyFactory (4 aliens), EnemyManager
+  Game.ts            game state machine, main loop, game-feel (shake/FOV)
+  constants.ts       tunables (player, camera, weapon, projectiles, arena)
+  core/              Engine, PostProcessing (bloom), Input, Audio (WebAudio SFX)
+  world/             Environment (lights, fog, sky, ground, walls), Obstacles (cover)
+  player/            PlayerController (pointer lock, WASD, sprint, regen), Health
+  weapons/           Weapon (hitscan, ADS, recoil), Projectiles (enemy plasma bolts)
+  enemies/           Enemy base (chase/ranged/boss), EnemyFactory (4 aliens + boss), EnemyManager
   fx/                Particles (sparks, death explosions)
-  levels/            LevelManager data (per-level alien, palette, counts)
-  ui/                HUD, Screens
+  levels/            per-level data (alien, palette, counts, boss flag)
+  ui/                HUD (health, ammo, score, boss bar, hitmarker, kill feed), Screens
 ```
+
+The standalone `game.html` and the inliner at `scripts/inline.mjs` produce the
+single-file build.

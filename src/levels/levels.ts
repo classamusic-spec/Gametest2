@@ -12,6 +12,8 @@ export interface LevelConfig {
   spawnInterval: number;
   /** Briefing shown on the intro card. */
   briefing: string;
+  /** If set, a boss spawns at the start and must also be defeated. */
+  boss?: boolean;
   /** Neon palette for this planet. */
   palette: {
     fog: number;
@@ -93,12 +95,13 @@ export const LEVELS: LevelConfig[] = [
     id: 4,
     name: "EVIL REPTILIANS — THE WARRENS",
     alienType: "reptilian",
-    count: 12,
-    maxAlive: 4,
-    spawnInterval: 1.5,
+    count: 8,
+    maxAlive: 3,
+    spawnInterval: 2.2,
+    boss: true,
     briefing:
-      "Deep in the Warrens, the <span class='danger'>Evil Reptilians</span> wait. " +
-      "Slow, immense and brutal. Survive their assault and the Federation prevails.",
+      "Deep in the Warrens, the <span class='danger'>Reptilian Warlord</span> rises — " +
+      "a towering boss flanked by its brood. Destroy it and the Federation prevails.",
     palette: {
       fog: 0x1e0a14,
       skyTop: 0x2a0c18,

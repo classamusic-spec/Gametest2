@@ -42,6 +42,11 @@ test("game loads, renders, and exposes a working state machine", async ({ page }
   const remaining = await page.evaluate(() => (window as any).__game.enemiesRemaining());
   expect(remaining).toBeGreaterThan(0);
 
+  // Level 4 spawns the Reptilian Warlord boss.
+  await page.evaluate(() => (window as any).__game.forcePlay(3));
+  const hasBoss = await page.evaluate(() => (window as any).__game.hasBoss());
+  expect(hasBoss).toBe(true);
+
   await page.screenshot({ path: "test-results/start-screen.png" });
 
   expect(errors, `console/page errors:\n${errors.join("\n")}`).toEqual([]);
