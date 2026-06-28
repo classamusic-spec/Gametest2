@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { createComposer } from "./PostProcessing";
+import { CAMERA } from "../constants";
 import type { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 
 /**
@@ -29,7 +30,7 @@ export class Engine {
     this.scene = new THREE.Scene();
 
     this.camera = new THREE.PerspectiveCamera(
-      75,
+      CAMERA.baseFov,
       window.innerWidth / window.innerHeight,
       0.1,
       1000,
@@ -48,6 +49,13 @@ export class Engine {
     this.renderer.setSize(w, h);
     this.composer.setSize(w, h);
   };
+
+  /** Smoothly set the field of view (for sprint/ADS/fire punch). */
+  setFov(fov: number) {
+    if (Math.abs(this.camera.fov - fov) < 0.01) return;
+    this.camera.fov = fov;
+    this.camera.updateProjectionMatrix();
+  }
 
   render() {
     this.composer.render();

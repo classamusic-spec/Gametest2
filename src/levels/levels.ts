@@ -12,6 +12,10 @@ export interface LevelConfig {
   spawnInterval: number;
   /** Briefing shown on the intro card. */
   briefing: string;
+  /** If set, a boss spawns at the start and must also be defeated. */
+  boss?: boolean;
+  /** Occasional second alien type mixed into the wave for variety. */
+  mix?: AlienType;
   /** Neon palette for this planet. */
   palette: {
     fog: number;
@@ -30,9 +34,9 @@ export const LEVELS: LevelConfig[] = [
     id: 1,
     name: "GREYS — OUTPOST ZETA",
     alienType: "grey",
-    count: 10,
-    maxAlive: 4,
-    spawnInterval: 1.6,
+    count: 14,
+    maxAlive: 6,
+    spawnInterval: 1.4,
     briefing:
       "The <span class='accent'>Greys</span> have infiltrated Outpost Zeta. " +
       "Slow and fragile, but they come in numbers. Clear the sector.",
@@ -51,9 +55,10 @@ export const LEVELS: LevelConfig[] = [
     id: 2,
     name: "INSECTOIDS — HIVE BIOME",
     alienType: "insectoid",
-    count: 16,
-    maxAlive: 7,
-    spawnInterval: 1.0,
+    count: 22,
+    maxAlive: 9,
+    spawnInterval: 0.85,
+    mix: "grey",
     briefing:
       "A <span class='accent'>Insectoid</span> swarm boils out of the hive. " +
       "Fast and relentless — keep moving and don't let them surround you.",
@@ -72,9 +77,10 @@ export const LEVELS: LevelConfig[] = [
     id: 3,
     name: "EVIL NORDICS — FROZEN CITADEL",
     alienType: "nordic",
-    count: 14,
-    maxAlive: 5,
-    spawnInterval: 1.3,
+    count: 18,
+    maxAlive: 7,
+    spawnInterval: 1.2,
+    mix: "insectoid",
     briefing:
       "The <span class='accent'>Evil Nordics</span> defend their frozen citadel. " +
       "Tall, armored and resilient — aim true, they take more punishment.",
@@ -93,12 +99,14 @@ export const LEVELS: LevelConfig[] = [
     id: 4,
     name: "EVIL REPTILIANS — THE WARRENS",
     alienType: "reptilian",
-    count: 12,
+    count: 10,
     maxAlive: 4,
-    spawnInterval: 1.5,
+    spawnInterval: 2.0,
+    boss: true,
+    mix: "nordic",
     briefing:
-      "Deep in the Warrens, the <span class='danger'>Evil Reptilians</span> wait. " +
-      "Slow, immense and brutal. Survive their assault and the Federation prevails.",
+      "Deep in the Warrens, the <span class='danger'>Reptilian Warlord</span> rises — " +
+      "a towering boss flanked by its brood. Destroy it and the Federation prevails.",
     palette: {
       fog: 0x1e0a14,
       skyTop: 0x2a0c18,

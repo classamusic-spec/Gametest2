@@ -207,12 +207,19 @@ function buildNordic(): Enemy {
 
   const stats: EnemyStats = {
     health: 90,
-    speed: 3.6,
+    speed: 3.8,
     damage: 12,
     attackRange: 2.1,
     attackInterval: 1.1,
     scoreValue: 180,
     deathColor: 0x6fd0ff,
+    ranged: {
+      fireInterval: 1.9,
+      projectileSpeed: 26,
+      projectileDamage: 11,
+      preferredRange: 15,
+      color: 0x6fd0ff,
+    },
   };
   const enemy = new Enemy(g, hitbox, stats);
   enemy.animate = (_e, _dt, t) => {
@@ -299,6 +306,107 @@ function buildReptilian(): Enemy {
   return enemy;
 }
 
+// ---------- Reptilian Warlord (boss) ----------
+function buildBoss(): Enemy {
+  const g = new THREE.Group();
+  const scale = emissiveMat(0x244d24, 0x2f7a2a, { roughness: 0.5, metalness: 0.55 });
+  const armor = emissiveMat(0x3a2010, 0x6a3010, { roughness: 0.4, metalness: 0.7 });
+  const coreMat = new THREE.MeshStandardMaterial({
+    color: 0xff7a1f,
+    emissive: 0xff5a00,
+    emissiveIntensity: 3,
+  });
+
+  const torso = new THREE.Mesh(new THREE.DodecahedronGeometry(1.6, 0), scale);
+  torso.position.y = 3.0;
+  torso.scale.set(1.2, 1.3, 1.05);
+  g.add(torso);
+
+  // Glowing chest core (weak point look).
+  const core = new THREE.Mesh(new THREE.IcosahedronGeometry(0.6, 1), coreMat);
+  core.position.set(0, 2.9, 0.95);
+  g.add(core);
+
+  const head = new THREE.Mesh(new THREE.ConeGeometry(0.7, 1.6, 8), scale);
+  head.rotation.x = Math.PI / 2;
+  head.position.set(0, 4.4, 0.7);
+  g.add(head);
+
+  const eyeMat = new THREE.MeshStandardMaterial({
+    color: 0xffe14a,
+    emissive: 0xffd000,
+    emissiveIntensity: 3.2,
+  });
+  for (const sx of [-1, 1]) {
+    const eye = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 10), eyeMat);
+    eye.scale.set(0.5, 1.5, 0.5);
+    eye.position.set(sx * 0.3, 4.5, 1.2);
+    g.add(eye);
+  }
+
+  // Horn crown.
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 5 - 0.5) * 2.2;
+    const horn = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.9, 6), armor);
+    horn.position.set(Math.sin(a) * 0.7, 5.0, 0.2 + Math.cos(a) * 0.2);
+    horn.rotation.z = -a * 0.6;
+    g.add(horn);
+  }
+
+  // Back spines.
+  for (let i = 0; i < 6; i++) {
+    const spine = new THREE.Mesh(new THREE.ConeGeometry(0.22, 0.9, 6), scale);
+    spine.position.set(0, 3.8 - i * 0.4, -1.0 - i * 0.08);
+    g.add(spine);
+  }
+
+  // Heavy limbs.
+  const arms: THREE.Mesh[] = [];
+  for (const sx of [-1, 1]) {
+    const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.42, 1.4, 5, 9), scale);
+    leg.position.set(sx * 0.7, 1.2, 0);
+    g.add(leg);
+    const arm = new THREE.Mesh(new THREE.CapsuleGeometry(0.32, 1.5, 5, 9), scale);
+    arm.position.set(sx * 1.5, 2.9, 0.2);
+    arm.rotation.z = sx * 0.5;
+    g.add(arm);
+    arms.push(arm);
+  }
+
+  addShadow(g);
+  const hitbox = invisibleHitbox(3.4, 5.4, 3.0);
+  g.add(hitbox);
+
+  const stats: EnemyStats = {
+    health: 2600,
+    speed: 2.2,
+    damage: 34,
+    attackRange: 4.2,
+    attackInterval: 1.2,
+    scoreValue: 2500,
+    deathColor: 0xff7a1f,
+    ranged: {
+      fireInterval: 2.6,
+      projectileSpeed: 20,
+      projectileDamage: 13,
+      preferredRange: 10,
+      burst: 5,
+      spread: 0.6,
+      color: 0xff7a1f,
+    },
+  };
+  const enemy = new Enemy(g, hitbox, stats);
+  enemy.isBoss = true;
+  enemy.animate = (e, _dt, t) => {
+    e.group.position.y = Math.abs(Math.sin(t * 2)) * 0.12;
+    core.scale.setScalar(1 + Math.sin(t * 4) * 0.08);
+    arms.forEach((arm, i) => {
+      arm.rotation.x = Math.sin(t * 2.2 + i * Math.PI) * 0.35;
+    });
+  };
+  return enemy;
+}
+
 export function createEnemy(type: AlienType): Enemy {
   switch (type) {
     case "grey":
@@ -310,4 +418,8 @@ export function createEnemy(type: AlienType): Enemy {
     case "reptilian":
       return buildReptilian();
   }
+}
+
+export function createBoss(): Enemy {
+  return buildBoss();
 }
