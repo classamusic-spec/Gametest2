@@ -4,6 +4,7 @@ export class Input {
   private pressedThisFrame = new Set<string>();
   mouseDown = false;
   rightMouseDown = false;
+  private mousePressed = false;
 
   constructor() {
     window.addEventListener("keydown", this.onKeyDown);
@@ -21,7 +22,10 @@ export class Input {
     this.keys.delete(e.code);
   };
   private onMouseDown = (e: MouseEvent) => {
-    if (e.button === 0) this.mouseDown = true;
+    if (e.button === 0) {
+      if (!this.mouseDown) this.mousePressed = true;
+      this.mouseDown = true;
+    }
     if (e.button === 2) this.rightMouseDown = true;
   };
   private onMouseUp = (e: MouseEvent) => {
@@ -38,8 +42,14 @@ export class Input {
     return this.pressedThisFrame.has(code);
   }
 
+  /** True only on the frame the left mouse button was first pressed. */
+  wasMousePressed(): boolean {
+    return this.mousePressed;
+  }
+
   /** Clear per-frame edge events. Call at end of each update. */
   endFrame() {
     this.pressedThisFrame.clear();
+    this.mousePressed = false;
   }
 }

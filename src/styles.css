@@ -158,10 +158,89 @@ body {
 #ammo-block {
   text-align: right;
 }
+#weapon-name {
+  font-size: 12px;
+  letter-spacing: 3px;
+  color: var(--neon);
+  opacity: 0.85;
+  margin-bottom: 4px;
+}
 #ammo-value {
   font-size: 26px;
   font-weight: 800;
   letter-spacing: 2px;
+}
+
+/* Weapon selector strip */
+#weapon-strip {
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 8px;
+}
+.weap-slot {
+  min-width: 78px;
+  text-align: center;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  border: 1px solid rgba(54, 227, 255, 0.25);
+  border-radius: 4px;
+  background: rgba(4, 10, 22, 0.5);
+  color: #6f8aa0;
+}
+.weap-slot .num {
+  opacity: 0.5;
+  margin-right: 5px;
+}
+.weap-slot.owned {
+  color: #cfe8ff;
+  border-color: rgba(54, 227, 255, 0.5);
+}
+.weap-slot.locked {
+  opacity: 0.35;
+}
+.weap-slot.current {
+  color: var(--bg);
+  background: var(--neon);
+  border-color: var(--neon);
+  box-shadow: 0 0 16px var(--neon-dim);
+}
+
+/* Pickup toast */
+#pickup-toast {
+  position: absolute;
+  top: 62%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  color: var(--good);
+  text-shadow: 0 0 14px rgba(77, 255, 158, 0.7);
+  opacity: 0;
+}
+#pickup-toast.show {
+  animation: toast 1.3s ease-out;
+}
+@keyframes toast {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 12px);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 #damage-vignette {

@@ -1,10 +1,10 @@
 /** Central tunables for the whole game. */
 export const ARENA = {
   /** Half-extent of the playable square (meters). */
-  halfSize: 36,
+  halfSize: 50,
   groundY: 0,
   eyeHeight: 1.7,
-  wallHeight: 8,
+  wallHeight: 10,
 };
 
 export const PLAYER = {
@@ -28,17 +28,7 @@ export const CAMERA = {
   firePunch: 2.5,
 };
 
-export const WEAPON = {
-  damage: 34,
-  range: 140,
-  fireRate: 9, // shots per second
-  magazine: 24,
-  reserve: Infinity, // unlimited reserve, must still reload
-  reloadTime: 1.05, // seconds
-  /** Bullet spread (radians) at the hip; tighter while aiming. */
-  hipSpread: 0.022,
-  adsSpread: 0.004,
-};
+// Per-weapon stats live in weapons/WeaponTypes.ts.
 
 export const PROJECTILE = {
   radius: 0.28,

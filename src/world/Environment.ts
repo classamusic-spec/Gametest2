@@ -15,6 +15,8 @@ export class Environment {
   private ground: THREE.Mesh;
   private groundMat: THREE.MeshStandardMaterial;
   private grid: THREE.GridHelper;
+  private skylineMat: THREE.MeshStandardMaterial;
+  private ringMat: THREE.MeshBasicMaterial;
 
   constructor(scene: THREE.Scene) {
     scene.fog = new THREE.FogExp2(0x0a1430, 0.012);
@@ -83,16 +85,92 @@ export class Environment {
     // Glowing grid overlay for the neon look.
     this.grid = new THREE.GridHelper(
       ARENA.halfSize * 2,
-      40,
+      50,
       0x2f6fff,
       0x2f6fff,
     );
     (this.grid.material as THREE.Material).transparent = true;
-    (this.grid.material as THREE.Material).opacity = 0.35;
+    (this.grid.material as THREE.Material).opacity = 0.32;
     this.grid.position.y = 0.02;
     this.group.add(this.grid);
 
+    this.skylineMat = new THREE.MeshStandardMaterial({
+      color: 0x0a1020,
+      emissive: 0x2f6fff,
+      emissiveIntensity: 0.5,
+      roughness: 0.5,
+      metalness: 0.6,
+    });
+    this.ringMat = new THREE.MeshBasicMaterial({
+      color: 0x2f6fff,
+      transparent: true,
+      opacity: 0.18,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+    });
+
     this.buildWalls();
+    this.buildStars();
+    this.buildSkyline();
+    this.buildGroundRings();
+  }
+
+  /** Static starfield on the sky dome. */
+  private buildStars() {
+    const count = 700;
+    const positions = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      // Upper hemisphere of a large sphere.
+      const u = Math.random();
+      const v = Math.random() * 0.5; // upper half
+      const theta = u * Math.PI * 2;
+      const phi = Math.acos(1 - 2 * v);
+      const r = 460;
+      positions[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+      positions[i * 3 + 1] = Math.abs(r * Math.cos(phi)) + 20;
+      positions[i * 3 + 2] = r * Math.sin(phi) * Math.sin(theta);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    const stars = new THREE.Points(
+      geo,
+      new THREE.PointsMaterial({
+        color: 0xcfe8ff,
+        size: 1.6,
+        sizeAttenuation: false,
+        transparent: true,
+        opacity: 0.9,
+      }),
+    );
+    this.group.add(stars);
+  }
+
+  /** Distant non-colliding spires beyond the arena walls for a skyline. */
+  private buildSkyline() {
+    const count = 28;
+    for (let i = 0; i < count; i++) {
+      const a = (i / count) * Math.PI * 2 + 0.2;
+      const r = ARENA.halfSize + 18 + Math.random() * 55;
+      const h = 14 + Math.random() * 46;
+      const w = 2 + Math.random() * 5;
+      const spire = new THREE.Mesh(new THREE.BoxGeometry(w, h, w), this.skylineMat);
+      spire.position.set(Math.cos(a) * r, h / 2, Math.sin(a) * r);
+      this.group.add(spire);
+    }
+  }
+
+  /** Flat glowing rings on the ground for depth and motion cues. */
+  private buildGroundRings() {
+    for (const radius of [14, 26, 40]) {
+      const ring = new THREE.Mesh(
+        new THREE.RingGeometry(radius - 0.18, radius + 0.18, 96),
+        this.ringMat,
+      );
+      ring.rotation.x = -Math.PI / 2;
+      ring.position.y = 0.03;
+      this.group.add(ring);
+    }
   }
 
   /** Low neon boundary walls so the arena reads as enclosed. */
@@ -134,5 +212,7 @@ export class Environment {
     this.groundMat.color.setHex(p.ground);
     const gridMat = this.grid.material as THREE.LineBasicMaterial;
     gridMat.color.setHex(p.grid);
+    this.skylineMat.emissive.setHex(p.grid);
+    this.ringMat.color.setHex(p.grid);
   }
 }

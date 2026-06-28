@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { ARENA } from "../constants";
 import type { LevelConfig } from "../levels/levels";
 
 interface CoverDef {
@@ -7,32 +8,96 @@ interface CoverDef {
   w: number;
   h: number;
   d: number;
-  kind: "crate" | "pillar" | "barrier";
+}
+
+/** Small deterministic RNG so each level's layout is fixed and fair. */
+function mulberry32(seed: number) {
+  let a = seed >>> 0;
+  return () => {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
 }
 
 /**
- * Fixed cover layout (crates, pillars, barriers) for tactical play.
- * Positions are deterministic so each arena reads the same and is fair.
- * Avoids the player start zone near +Z and the dead center.
+ * Build a richer, deterministic cover layout for a level: a central fort,
+ * a ring of pillars, and scattered crates/barriers — kept clear of the
+ * player's start and the boss spawn.
  */
-const LAYOUT: CoverDef[] = [
-  { x: -10, z: 6, w: 3, h: 2.6, d: 3, kind: "crate" },
-  { x: 11, z: 4, w: 3, h: 2.6, d: 3, kind: "crate" },
-  { x: 0, z: -8, w: 5, h: 1.5, d: 1, kind: "barrier" },
-  { x: -16, z: -10, w: 1.4, h: 6, d: 1.4, kind: "pillar" },
-  { x: 16, z: -12, w: 1.4, h: 6, d: 1.4, kind: "pillar" },
-  { x: -6, z: -18, w: 3, h: 2.6, d: 3, kind: "crate" },
-  { x: 8, z: -20, w: 4, h: 1.5, d: 1, kind: "barrier" },
-  { x: -20, z: 12, w: 1.4, h: 6, d: 1.4, kind: "pillar" },
-  { x: 20, z: 14, w: 1.4, h: 6, d: 1.4, kind: "pillar" },
-  { x: 0, z: -28, w: 3.2, h: 3.2, d: 3.2, kind: "crate" },
-  { x: -13, z: 18, w: 4, h: 1.5, d: 1, kind: "barrier" },
-  { x: 13, z: 20, w: 3, h: 2.6, d: 3, kind: "crate" },
-];
+function generateLayout(level: LevelConfig): CoverDef[] {
+  const rng = mulberry32(level.id * 1013 + 7);
+  const defs: CoverDef[] = [];
+  const limit = ARENA.halfSize - 6;
+  const playerStartZ = ARENA.halfSize - 8;
+
+  const tooClose = (x: number, z: number, pad: number) => {
+    // Keep clear of player start and boss spawn (0, 8) and dead center.
+    if (Math.hypot(x - 0, z - playerStartZ) < 10 + pad) return true;
+    if (Math.hypot(x - 0, z - 8) < 8 + pad) return true;
+    for (const d of defs) {
+      if (Math.hypot(x - d.x, z - d.z) < Math.max(d.w, d.d) + pad + 2) return true;
+    }
+    return false;
+  };
+
+  // Central fort: a small cluster of crates.
+  const fort: [number, number][] = [
+    [-4, -6],
+    [4, -6],
+    [-4, -14],
+    [4, -14],
+    [0, -10],
+  ];
+  for (const [x, z] of fort) {
+    defs.push({ x, z, w: 3.2, h: 2.8, d: 3.2 });
+  }
+
+  // Ring of tall pillars.
+  const pillars = 8;
+  const ringR = ARENA.halfSize * 0.62;
+  for (let i = 0; i < pillars; i++) {
+    const a = (i / pillars) * Math.PI * 2 + 0.3;
+    const x = Math.cos(a) * ringR;
+    const z = Math.sin(a) * ringR;
+    if (Math.abs(x) > limit || Math.abs(z) > limit) continue;
+    defs.push({ x, z, w: 1.6, h: 7, d: 1.6 });
+  }
+
+  // Scattered crates and barriers.
+  let placed = 0;
+  let attempts = 0;
+  while (placed < 14 && attempts < 200) {
+    attempts++;
+    const x = (rng() * 2 - 1) * limit;
+    const z = (rng() * 2 - 1) * limit;
+    if (tooClose(x, z, 1)) continue;
+    const barrier = rng() < 0.4;
+    if (barrier) {
+      const horiz = rng() < 0.5;
+      defs.push({
+        x,
+        z,
+        w: horiz ? 4.5 : 1,
+        h: 1.6,
+        d: horiz ? 1 : 4.5,
+      });
+    } else {
+      const s = 2.4 + rng() * 1.6;
+      defs.push({ x, z, w: s, h: 2.2 + rng() * 1.4, d: s });
+    }
+    placed++;
+  }
+
+  return defs;
+}
 
 /**
  * Cover field: builds meshes and AABBs, blocks shots/projectiles via the
  * meshes, and resolves circle-vs-box collision for the player and enemies.
+ * Rebuilt per level via build().
  */
 export class Obstacles {
   readonly group = new THREE.Group();
@@ -50,8 +115,21 @@ export class Obstacles {
       metalness: 0.65,
     });
     this.edgeMat = new THREE.LineBasicMaterial({ color: 0x36e3ff });
+  }
 
-    for (const c of LAYOUT) {
+  /** Regenerate cover for a level and recolor to its palette. */
+  build(level: LevelConfig) {
+    for (const child of [...this.group.children]) {
+      this.group.remove(child);
+      const mesh = child as THREE.Mesh;
+      mesh.geometry?.dispose?.();
+    }
+    this.meshes = [];
+    this.boxes.length = 0;
+    this.edgeMat.color.setHex(level.palette.grid);
+    this.mat.emissive.setHex(level.palette.fog);
+
+    for (const c of generateLayout(level)) {
       const geo = new THREE.BoxGeometry(c.w, c.h, c.d);
       const mesh = new THREE.Mesh(geo, this.mat);
       mesh.position.set(c.x, c.h / 2, c.z);
@@ -60,24 +138,17 @@ export class Obstacles {
       this.group.add(mesh);
       this.meshes.push(mesh);
 
-      // Neon edge outline for the sci-fi look.
       const edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), this.edgeMat);
       edges.position.copy(mesh.position);
       this.group.add(edges);
 
-      // Collision box, slightly inflated, treated as full-height in XZ.
-      const box = new THREE.Box3().setFromCenterAndSize(
-        new THREE.Vector3(c.x, c.h / 2, c.z),
-        new THREE.Vector3(c.w, c.h, c.d),
+      this.boxes.push(
+        new THREE.Box3().setFromCenterAndSize(
+          new THREE.Vector3(c.x, c.h / 2, c.z),
+          new THREE.Vector3(c.w, c.h, c.d),
+        ),
       );
-      this.boxes.push(box);
     }
-  }
-
-  /** Recolor cover edges to match the level palette. */
-  applyPalette(level: LevelConfig) {
-    this.edgeMat.color.setHex(level.palette.grid);
-    this.mat.emissive.setHex(level.palette.fog);
   }
 
   /** Meshes to include in the weapon raycast so shots are blocked by cover. */
@@ -117,13 +188,11 @@ export class Obstacles {
       if (distSq > radius * radius) continue;
 
       if (distSq > 1e-6) {
-        // Outside the box but overlapping the circle — push out radially.
         const dist = Math.sqrt(distSq);
         const push = radius - dist;
         pos.x += (dx / dist) * push;
         pos.z += (dz / dist) * push;
       } else {
-        // Center is inside the box — eject along the smallest penetration axis.
         const toLeft = pos.x - b.min.x;
         const toRight = b.max.x - pos.x;
         const toNear = pos.z - b.min.z;

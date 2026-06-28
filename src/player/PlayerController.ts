@@ -66,6 +66,11 @@ export class PlayerController {
     this.object.position.copy(this.base);
   }
 
+  /** Restore health (loot pickup), clamped to max. */
+  heal(amount: number) {
+    this.health.current = Math.min(this.health.max, this.health.current + amount);
+  }
+
   /** Apply damage if not in the post-hit grace window. Returns true if it landed. */
   takeDamage(amount: number): boolean {
     if (this.hitTimer > 0 || !this.health.alive) return false;

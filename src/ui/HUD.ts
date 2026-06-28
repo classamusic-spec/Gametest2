@@ -1,3 +1,5 @@
+import type { WeaponSlotView } from "../weapons/Arsenal";
+
 /** Thin wrapper over the DOM HUD elements declared in index.html. */
 export class HUD {
   private root = document.getElementById("hud")!;
@@ -6,6 +8,9 @@ export class HUD {
   private healthFill = document.getElementById("health-fill")!;
   private scoreValue = document.getElementById("score-value")!;
   private ammoValue = document.getElementById("ammo-value")!;
+  private weaponName = document.getElementById("weapon-name")!;
+  private weaponStrip = document.getElementById("weapon-strip")!;
+  private pickupToast = document.getElementById("pickup-toast")!;
   private vignette = document.getElementById("damage-vignette")!;
   private lowVignette = document.getElementById("lowhealth-vignette")!;
   private reloadIndicator = document.getElementById("reload-indicator")!;
@@ -37,6 +42,29 @@ export class HUD {
   }
   setAmmo(text: string) {
     this.ammoValue.textContent = text;
+  }
+  setWeaponName(name: string) {
+    this.weaponName.textContent = name;
+  }
+
+  /** Render the weapon selector strip from the arsenal snapshot. */
+  setWeapons(slots: WeaponSlotView[]) {
+    this.weaponStrip.innerHTML = "";
+    slots.forEach((s, i) => {
+      const el = document.createElement("div");
+      el.className =
+        "weap-slot " + (s.current ? "current" : s.owned ? "owned" : "locked");
+      el.innerHTML = `<span class="num">${i + 1}</span>${s.tag}`;
+      this.weaponStrip.appendChild(el);
+    });
+  }
+
+  /** Flash a pickup message (loot collected). */
+  showPickup(text: string) {
+    this.pickupToast.textContent = text;
+    this.pickupToast.classList.remove("show");
+    void this.pickupToast.offsetWidth;
+    this.pickupToast.classList.add("show");
   }
   setReloading(on: boolean) {
     this.reloadIndicator.classList.toggle("hidden", !on);

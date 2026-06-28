@@ -103,7 +103,9 @@ export class EnemyManager {
 
   private spawnOne() {
     if (!this.level) return;
-    const enemy = createEnemy(this.level.alienType);
+    const type =
+      this.level.mix && Math.random() < 0.25 ? this.level.mix : this.level.alienType;
+    const enemy = createEnemy(type);
     this.wire(enemy);
     // Spawn at a moderate distance around the player so they close in from
     // all sides, clamped to stay inside the arena.
